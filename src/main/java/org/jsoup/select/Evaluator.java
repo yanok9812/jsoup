@@ -747,6 +747,27 @@ public abstract class Evaluator {
     }
 
     /**
+     * Evaluator for matching Element's own whole text (not normalized)
+     */
+    public static final class ContainsOwnWholeText extends Evaluator {
+        private final String searchText;
+
+        public ContainsOwnWholeText(String searchText) {
+            this.searchText = searchText;
+        }
+
+        @Override
+        public boolean matches(Element root, Element element) {
+            return element.ownWholeText().contains(searchText);
+        }
+
+        @Override
+        public String toString() {
+            return String.format(":containsOwnWholeText(%s)", searchText);
+        }
+    }
+
+    /**
      * Evaluator for matching Element (and its descendants) text with regex
      */
     public static final class Matches extends Evaluator {
@@ -787,6 +808,28 @@ public abstract class Evaluator {
         @Override
         public String toString() {
             return String.format(":matchesOwn(%s)", pattern);
+        }
+    }
+
+    /**
+     * Evaluator for matching Element's own whole text with regex
+     */
+    public static final class MatchesOwnWhole extends Evaluator {
+        private final Pattern pattern;
+
+        public MatchesOwnWhole(Pattern pattern) {
+            this.pattern = pattern;
+        }
+
+        @Override
+        public boolean matches(Element root, Element element) {
+            Matcher m = pattern.matcher(element.ownWholeText());
+            return m.find();
+        }
+
+        @Override
+        public String toString() {
+            return String.format(":matchesOwnWhole(%s)", pattern);
         }
     }
 

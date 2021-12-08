@@ -1317,6 +1317,17 @@ public class Element extends Node {
         return StringUtil.releaseBuilder(sb).trim();
     }
 
+    /**
+     * Gets the whole text (unnormalized) owned by this element only; does not get the combined text of all children.
+     * <p>
+     * For example, given HTML {@code <p>Hello <b>there</b> now!</p>}, {@code p.ownWholeText()} returns {@code "Hello now!"},
+     * whereas {@code p.text()} returns {@code "Hello there now!"}.
+     * Note that the text within the {@code b} element is not returned, as it is not a direct child of the {@code p} element.
+     *
+     * @return unencoded text, or empty string if none.
+     * @see #text()
+     * @see #textNodes()
+     */
     private void ownText(StringBuilder accum) {
         for (int i = 0; i < childNodeSize(); i++) {
             Node child = childNodes.get(i);
@@ -1341,6 +1352,29 @@ public class Element extends Node {
     private static void appendWhitespaceIfBr(Element element, StringBuilder accum) {
         if (element.tag.normalName().equals("br") && !TextNode.lastCharIsWhitespace(accum))
             accum.append(" ");
+    }
+
+    public String ownWholeText() {
+        StringBuilder sb = StringUtil.borrowBuilder();
+        ownWholeText(sb);
+        return StringUtil.releaseBuilder(sb).trim();
+    }
+
+    private void ownWholeText(StringBuilder accum) {
+        for (int i = 0; i < childNodeSize(); i++) {
+            Node child = childNodes.get(i);
+            if (child instanceof TextNode) {
+                TextNode textNode = (TextNode) child;
+                appendNormalisedText(accum, textNode);
+            } else if (child instanceof Element) {
+                appendNewLineIfBr((Element) child, accum);
+            }
+        }
+    }
+
+    private static void appendNewLineIfBr(Element element, StringBuilder accum) {
+        if (element.tag.normalName().equals("br"))
+            accum.append("\n");
     }
 
     static boolean preserveWhitespace(@Nullable Node node) {
